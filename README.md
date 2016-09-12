@@ -29,6 +29,15 @@ Latent Dirichlet Allocation, KDD'2013](http://www.ics.uci.edu/~welling/publicati
 ### Belief propagation
 [Learning Topic Models by Belief Propagation, 2012](https://arxiv.org/pdf/1109.3437.pdf)
 
+
+### Distributed Implementaion
+#### variational method
+[Mr. LDA: A Flexible Large Scale Topic Modeling Package
+using Variational Inference in MapReduce, WWW'2012](http://kzhai.github.io/paper/2012_www.pdf)
+
+#### gibbs sampling
+
+
 ### Study papers
 [On Smoothing and Inference for Topic Models, 2009](http://arxiv.org/pdf/1205.2662.pdf)
 
