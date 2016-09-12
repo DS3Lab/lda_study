@@ -7,6 +7,7 @@ study various inference methods for latent dirichlet allocation, including colla
 ### Variational inference
 
 [A Collapsed Variational Bayesian Inference Algorithm for Latent Dirichlet Allocation, 2007](http://papers.nips.cc/paper/3113-a-collapsed-variational-bayesian-inference-algorithm-for-latent-dirichlet-allocation.pdf)
+
 [Stochastic Variational Inference, 2013](http://www.jmlr.org/papers/volume14/hoffman13a/hoffman13a.pdf)
 
 ### Belief propagation
