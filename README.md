@@ -26,17 +26,28 @@ Document Collections, KDD'2009](https://core.ac.uk/download/pdf/21747811.pdf)
 [Stochastic Collapsed Variational Bayesian Inference for
 Latent Dirichlet Allocation, KDD'2013](http://www.ics.uci.edu/~welling/publications/papers/fp1199-foulds.pdf)
 
+[On Smoothing and Inference for Topic Models, 2009](http://arxiv.org/pdf/1205.2662.pdf)
+
 ### Belief propagation
 [Learning Topic Models by Belief Propagation, 2012](https://arxiv.org/pdf/1109.3437.pdf)
 
 
 ### Distributed Implementaion
+
 #### variational method
 [Mr. LDA: A Flexible Large Scale Topic Modeling Package
 using Variational Inference in MapReduce, WWW'2012](http://kzhai.github.io/paper/2012_www.pdf)
 
 #### gibbs sampling
+Two types of implementation
 
+- Share Word-Topic matirx using PS
+	
+	[YahooLDA: An Architecture for Parallel Topic Models](http://vldb.org/pvldb/vldb2010/papers/R63.pdf)
+	
+- Shuffle Doc-Word matrix with topic assignment 
+	
+	[WarpLDA: a Cache Efficient O(1) Algorithm for Latent Dirichlet Allocation, VLDB'2016](http://www.vldb.org/pvldb/vol9/p744-chen.pdf)
 
 ### Study papers
 [On Smoothing and Inference for Topic Models, 2009](http://arxiv.org/pdf/1205.2662.pdf)
