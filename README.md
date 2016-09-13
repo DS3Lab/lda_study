@@ -22,11 +22,16 @@ Document Collections, KDD'2009](https://core.ac.uk/download/pdf/21747811.pdf)
 [CVB: A Collapsed Variational Bayesian Inference Algorithm for Latent Dirichlet Allocation, 2007](http://papers.nips.cc/paper/3113-a-collapsed-variational-bayesian-inference-algorithm-for-latent-dirichlet-allocation.pdf)
 
 [Stochastic Variational Inference, 2013](http://www.jmlr.org/papers/volume14/hoffman13a/hoffman13a.pdf)
+	
+	Stochastic method can avoid scanning the whole dataset at each iteration, which is time-consuming in batch mode.
+	It iterates between subsampling of data and adjusting the hidden structure based only on the subsample.
 
 [Stochastic Collapsed Variational Bayesian Inference for
 Latent Dirichlet Allocation, KDD'2013](http://www.ics.uci.edu/~welling/publications/papers/fp1199-foulds.pdf)
 
-[On Smoothing and Inference for Topic Models, 2009](http://arxiv.org/pdf/1205.2662.pdf)
+[CVB0: On Smoothing and Inference for Topic Models, 2009](http://arxiv.org/pdf/1205.2662.pdf)
+
+[Sparse stochastic inference for latent Dirichlet allocation, ICML'2012](http://www.cs.columbia.edu/~blei/papers/MimnoHoffmanBlei2012.pdf)
 
 ### Belief propagation
 [Learning Topic Models by Belief Propagation, 2012](https://arxiv.org/pdf/1109.3437.pdf)
@@ -53,6 +58,8 @@ Two types of implementation
 [On Smoothing and Inference for Topic Models, 2009](http://arxiv.org/pdf/1205.2662.pdf)
 
 [Rethinking Collapsed Variational Bayes Inference for LDA, ICML'2012](http://icml.cc/2012/papers/530.pdf)
+
+[Variational Inference: A Review for Statisticians](https://arxiv.org/pdf/1601.00670v3.pdf)
 
 
 ### Some discuss
