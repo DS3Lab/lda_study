@@ -25,6 +25,7 @@ Document Collections, KDD'2009](https://core.ac.uk/download/pdf/21747811.pdf)
 	
 	Stochastic method can avoid scanning the whole dataset at each iteration, which is time-consuming in batch mode.
 	It iterates between subsampling of data and adjusting the hidden structure based only on the subsample.
+	Variational inference is amenable to stochastic optimization because the variational objective decomposes into a sum of terms, one for each data point in the analysis.
 
 [Stochastic Collapsed Variational Bayesian Inference for
 Latent Dirichlet Allocation, KDD'2013](http://www.ics.uci.edu/~welling/publications/papers/fp1199-foulds.pdf)
@@ -33,9 +34,17 @@ Latent Dirichlet Allocation, KDD'2013](http://www.ics.uci.edu/~welling/publicati
 
 [Sparse stochastic inference for latent Dirichlet allocation, ICML'2012](http://www.cs.columbia.edu/~blei/papers/MimnoHoffmanBlei2012.pdf)
 
+### Stochatic gradient Sampler
+[Distributing the Stochastic Gradient Sampler for
+Large-Scale LDA, KDD'2016](http://www.kdd.org/kdd2016/papers/files/rpp0277-yangA.pdf)
+
 ### Belief propagation
 [Learning Topic Models by Belief Propagation, 2012](https://arxiv.org/pdf/1109.3437.pdf)
 
+[Residual Belief Propagation for Topic Modeling, 2012](http://arxiv.org/pdf/1204.6610.pdf)
+
+### Others
+[Memory-Efficient Topic Modeling](http://arxiv.org/pdf/1206.1147.pdf)
 
 ### Distributed Implementaion
 
