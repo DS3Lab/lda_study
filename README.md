@@ -73,3 +73,6 @@ Two types of implementation
 
 ### Some discuss
 [Variational vs MCMC, quora](https://www.quora.com/When-should-I-prefer-variational-inference-over-MCMC-for-Bayesian-analysis)
+
+### Reading List
+[LDA Reading List](http://bigml.cs.tsinghua.edu.cn/~jianfei/lda-reading.html)
