@@ -1,0 +1,26 @@
+﻿生成启动时间为 2016/11/12 14:28:39。
+     1>项目“D:\学习\实验室\lr\cvb0\cvb0\cvb0.vcxproj”在节点 2 上(Build 个目标)。
+     1>ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /Od /Oy- /D _MBCS /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc110.pdb" /Gd /TP /analyze- /errorReport:prompt "源.cpp"
+         源.cpp
+     1>d:\学习\实验室\lr\cvb0\cvb0\源.cpp(55): warning C4018: “<”: 有符号/无符号不匹配
+     1>d:\学习\实验室\lr\cvb0\cvb0\源.cpp(62): warning C4018: “<”: 有符号/无符号不匹配
+     1>d:\学习\实验室\lr\cvb0\cvb0\源.cpp(82): warning C4101: “item”: 未引用的局部变量
+     1>d:\学习\实验室\lr\cvb0\cvb0\源.cpp(148): warning C4018: “<”: 有符号/无符号不匹配
+     1>d:\学习\实验室\lr\cvb0\cvb0\源.cpp(154): warning C4018: “<”: 有符号/无符号不匹配
+     1>d:\学习\实验室\lr\cvb0\cvb0\源.cpp(181): warning C4018: “<”: 有符号/无符号不匹配
+     1>d:\学习\实验室\lr\cvb0\cvb0\源.cpp(192): error C3861: “lgamma”: 找不到标识符
+     1>d:\学习\实验室\lr\cvb0\cvb0\源.cpp(193): error C3861: “lgamma”: 找不到标识符
+     1>d:\学习\实验室\lr\cvb0\cvb0\源.cpp(198): error C3861: “lgamma”: 找不到标识符
+     1>d:\学习\实验室\lr\cvb0\cvb0\源.cpp(200): error C3861: “lgamma”: 找不到标识符
+     1>d:\学习\实验室\lr\cvb0\cvb0\源.cpp(207): error C3861: “lgamma”: 找不到标识符
+     1>d:\学习\实验室\lr\cvb0\cvb0\源.cpp(213): error C3861: “lgamma”: 找不到标识符
+     1>d:\学习\实验室\lr\cvb0\cvb0\源.cpp(216): error C3861: “lgamma”: 找不到标识符
+     1>d:\学习\实验室\lr\cvb0\cvb0\源.cpp(231): warning C4018: “<”: 有符号/无符号不匹配
+     1>d:\学习\实验室\lr\cvb0\cvb0\源.cpp(332): warning C4018: “<”: 有符号/无符号不匹配
+     1>d:\学习\实验室\lr\cvb0\cvb0\源.cpp(342): warning C4018: “<”: 有符号/无符号不匹配
+     1>已完成生成项目“D:\学习\实验室\lr\cvb0\cvb0\cvb0.vcxproj”(Build 个目标)的操作 - 失败。
+
+生成失败。
+
+已用时间 00:00:01.31
