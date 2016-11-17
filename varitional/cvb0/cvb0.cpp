@@ -10,7 +10,7 @@
 #include<string.h>
 #include<memory.h>
 #define M 1500 
-#define K 80
+#define K 40
 #define V 12387
 #define MaxRand 32761
 #define MaxLine 200000
@@ -30,21 +30,17 @@ map<string, int> Str2Int;
 vector<int> Doc_c[M];
 
 vector<vector<double> > Gamma[M];
-double m_mk[M][K], v_mk[M][K], m_kt[K][V], v_kt[K][V];
-double m_k[K], v_k[K];
+double m_mk[M][K], m_kt[K][V];
+double m_k[K];
 int iteration = 500;
 
 
 void count_update(int doc, int j, int word, double scale){
 	for (int k = 0; k < K; ++k){
 		double mc = scale * Gamma[doc][j][k];
-		double vc = scale * (1 - Gamma[doc][j][k]) * (Gamma[doc][j][k]);
 		m_mk[doc][k] += mc;
-		v_mk[doc][k] += vc;
 		m_kt[k][word] += mc;
-		v_kt[k][word] += vc;
 		m_k[k] += mc;
-		v_k[k] += vc;
 	}
 	return;
 }
@@ -82,7 +78,6 @@ void GetCount(){
 
 void GetDocment(string path){
 	ifstream in(path.c_str());
-	int item;
 	char line[MaxLine];
 	int docidx = 0;
 	int ItemInt = 0;
@@ -140,11 +135,8 @@ void Init(){
 		for (int j = 0; j < V; ++j)
 			phi[i][j] = 0;
 	memset(m_mk, 0, sizeof(m_mk));
-	memset(v_mk, 0, sizeof(v_mk));
 	memset(m_kt, 0, sizeof(m_kt));
-	memset(v_kt, 0, sizeof(v_kt));
 	memset(m_k, 0, sizeof(m_k));
-	memset(v_k, 0, sizeof(v_k));
 
 	for (int i = 0; i < M; ++i)
 	{
