@@ -10,8 +10,8 @@
 #include<string.h>
 #include<memory.h>
 #define M 1500 
-#define K 80
-#define V 12387
+#define K 40
+#define V 12419
 #define MaxRand 32761
 #define MaxLine 200000
 using namespace std;
@@ -34,21 +34,20 @@ public:
 };
 double alpha = 0.1, eta = 0.01;
 double phi[K][V], theta[M][K];
+double Nphi[K][V],Ntheta[M][K];
 double nz[K];
 int Doc_Count[M];
-int TotalNum = 0;
 vector<int> Document[M];
 map<string, int> Str2Int;
 vector<int> Doc_c[M];
 double nzHat[K];
 double Gamma[V][K];
 double nPhiHat[K][V];
-double s = 1;
 double Kappa = 0.9;
 
 int iteration = 2000;
-int TotalTokens = 0;
-
+double S1 = 10,S2 = 50;
+double TAO = 1000,TAO2= 105;
 
 void GetCount(){
 
@@ -83,11 +82,6 @@ void GetCount(){
 	for (int i = 0; i < M; ++i)
 		for (int j = 0; j < Document[i].size(); ++j)
 			Doc_Count[i] = Document[i].size();
-
-	for (int i = 0; i < M; ++i)
-		TotalNum += Doc_Count[i];
-
-
 }
 
 void GetDocment(string path){
@@ -199,93 +193,28 @@ void PrintTheta(string path){
 		out << endl;
 	}
 }
-
-void scvb_infer(MiniBatch batch){
-
-	int rhoPhi_t = 1;
-	int rhoTheta_t = 1;
-	TotalTokens = GetTotalNum();
-	memset(nPhiHat, 0, sizeof(nPhiHat));
-	memset(nzHat, 0, sizeof(nzHat));
-	memset(Gamma, 0, sizeof(Gamma));
-
-
-	int burn_Total = 1;
-	double rhoTheta = s / pow( (10 + rhoTheta_t), Kappa);
-
-	double rhoPhi = s / pow((10  + rhoPhi_t), Kappa);
-	for (int i = 0; i < batch.BatchSize; ++i)
-	{
-		int index = batch.doc[i].index;
-
-		for (int burn = 0; burn < burn_Total; ++burn)
-		{
-			rhoTheta = s / pow((10 + rhoTheta_t), Kappa);
-			rhoTheta_t++;
-
-			for (int j = 0; j < Document[index].size(); ++j)
-			{
-				double GammaSum = 0;
-				int wi = Document[index][j];
-				for (int k = 0; k < K; ++k)
-				{
-					Gamma[wi][k] = (eta + phi[k][wi]) * (alpha + theta[index][k]) / (nz[k] + eta * batch.TokenNum);
-
-					double clumpconst = pow((1 - rhoTheta), Doc_c[index][j]);
-					double partone = clumpconst * theta[index][k];
-					double parttwo = (1 - clumpconst) *Doc_Count[index] * Gamma[wi][k];
-					theta[index][k] = partone + parttwo;
-				}
-			}
-		}
-
-		rhoTheta = s / pow((10 + rhoTheta_t), Kappa);
-		rhoTheta_t++;
-		for (int j = 0; j < Document[index].size(); ++j)
-		{
-			double GammaSum = 0;
-			int wi = Document[index][j];
-
-			for (int k = 0; k < K; ++k)
-			{
-				Gamma[wi][k] = (eta + phi[k][wi]) * (alpha + theta[index][k]) / (nz[k] + eta * batch.TokenNum);
-				
-				double clumpconst = pow((1 - rhoTheta), Doc_c[index][j]);
-				double partone = clumpconst * theta[index][k];
-				double parttwo = (1 - clumpconst) *Doc_Count[index] * Gamma[wi][k]  ;
-				theta[index][k] = partone + parttwo;
-				nPhiHat[k][wi] = nPhiHat[k][wi] + (TotalNum* Gamma[wi][k]/batch.TokenNum  );
-				
-				nzHat[k] = nzHat[k] + (TotalNum*Gamma[wi][k]/batch.TokenNum );
-			}
-		}
-	}
-
-	rhoPhi = s / pow(100 + rhoPhi_t, Kappa);
-	rhoPhi_t++;
-	for (int k = 0; k < K; ++k)
-	{
-		for (int w = 0; w < V; ++w)
-		{
-			phi[k][w] = (1 - rhoPhi)*phi[k][w] + rhoPhi * nPhiHat[k][w];
-		}
-		nz[k] = (1 - rhoPhi) *nz[k] + rhoPhi*nzHat[k];
-	}
-
-}
 void  normalize(){
+
+	for (int i = 0;i<M;++i){
+		for (int k = 0;k<K;++k){
+			Ntheta[i][k] = theta[i][k] + alpha;
+		}
+	}
+	for (int k = 0 ;k<K;++k){
+		for (int w = 0;w<V;++w){
+			Nphi[k][w] = phi[k][w] + eta;
+ 		}
+	}
+
 
 	for (int k = 0; k < K; ++k)
 	{
 		double phisum = 0;
+		for (int v = 0; v < V; ++v)
+			phisum += Nphi[k][v];
 
 		for (int v = 0; v < V; ++v)
-		{
-			phisum += phi[k][v];
-
-		}
-		for (int v = 0; v < V; ++v)
-			phi[k][v] /= phisum;
+			Nphi[k][v] /= phisum;
 	}
 
 	
@@ -295,15 +224,12 @@ void  normalize(){
 		double thetasum = 0;
 
 		for (int k = 0; k < K; ++k)
-		{
-			thetasum += theta[i][k];
-		
-		}
+			thetasum += Ntheta[i][k];
+
 		for (int k = 0; k < K; ++k)
-			theta[i][k] /= thetasum;
+			Ntheta[i][k] /= thetasum;
 	}
 
-	cout << theta[0][0] << endl;
 }
 double  Compute_Perplexity(){
 	double  result = 0;
@@ -318,7 +244,7 @@ double  Compute_Perplexity(){
 
 			for (int k = 0; k < K; ++k){
 
-				p[k] += theta[m][k] * phi[k][wi];
+				p[k] = Ntheta[m][k] * Nphi[k][wi];
 			}
 			double tepsum = 0;
 
@@ -333,8 +259,108 @@ double  Compute_Perplexity(){
 
 	return exp(result);
 }
+
+void scvb_infer(MiniBatch batch,int iter,int curindex){
+
+	memset(nPhiHat, 0, sizeof(nPhiHat));
+	memset(nzHat, 0, sizeof(nzHat));
+	memset(Gamma, 0, sizeof(Gamma));
+	memset(nz,0,sizeof(nz));
+	int doc_iter = 0;
+	int burn_Total = 15;
+	double rhoTheta ;
+
+	double rhoPhi;
+
+
+	for (int k = 0;k<K;++k){
+		for (int w= 0;w<V;++w){
+			nz[k] += phi[k][w];
+		}
+	}
+	double C = GetTotalNum();
+	double minibatch_per_corpus =(1.0*C)/batch.BatchSize;
+
+	
+
+	for (int i = 0; i < batch.BatchSize; ++i)
+	{
+		int index = batch.doc[i].index;
+		doc_iter = curindex*batch.BatchSize + iter*M +i+1 ;
+		for (int burn = 0; burn < burn_Total; ++burn)
+		{
+
+			rhoTheta =  S2/ pow((TAO2+burn ), Kappa);
+
+			double weight_left = 0;
+			double GammaK[K];
+			memset(GammaK,0,sizeof(GammaK));
+			for (int j = 0; j < Document[index].size(); ++j)
+			{
+
+				double GammaSum = 0;
+				int wi = Document[index][j];
+				int wc = Doc_c[index][j];
+
+				for (int k = 0; k < K; ++k)
+				{
+					Gamma[wi][k] = (eta + phi[k][wi]) * (alpha + theta[index][k]) / (nz[k] + eta * V);
+					GammaSum += Gamma[wi][k];
+				}
+				for (int k = 0;k<K;++k)
+					Gamma[wi][k] /= GammaSum;
+
+				weight_left += pow((1 - rhoTheta), wc)   * wc /Doc_Count[index];
+
+				for (int k =0;k<K;++k)
+				{
+					GammaK[k] += (1 - pow((1 - rhoTheta), wc)) * wc * Gamma[wi][k];
+				}
+			}		
+
+			for (int k = 0;k<K;++k)
+			{
+				theta[index][k] = weight_left * theta[index][k] + GammaK[k];
+
+			}
+		}
+
+		for (int j = 0; j < Document[index].size(); ++j)
+		{
+			double GammaSum = 0;
+			int wi = Document[index][j];
+			int wc = Doc_c[index][j];
+			for (int k = 0; k < K; ++k)
+			{
+				Gamma[wi][k] = (eta + phi[k][wi]) * (alpha + theta[index][k]) / (nz[k] + eta * V);
+				GammaSum  += Gamma[wi][k];
+			}
+			for (int k = 0;k<K;++k)
+				Gamma[wi][k] /= GammaSum;
+
+			for(int k = 0;k<K;++k)		{
+				double tep = minibatch_per_corpus* Gamma[wi][k] * wc ;
+
+				nPhiHat[k][wi] += tep;
+				nzHat[k] += tep ;
+			}
+		}
+
+	}
+
+	rhoPhi = S1 / pow(TAO +doc_iter, Kappa);
+
+	for (int k = 0; k < K; ++k)
+	{
+		for (int w = 0; w < V; ++w)
+		{
+			phi[k][w] = (1 - rhoPhi)*phi[k][w] + rhoPhi * nPhiHat[k][w];
+		}
+	}
+
+}
 vector<MiniBatch> SetBatchs(){
-	int BatchSize = 100;
+	int BatchSize = 20;
 	
 	vector<MiniBatch> Batchs;
 	int index = 0;
@@ -356,7 +382,7 @@ void Train(){
 		cout << "iter  " << iter << endl;
 		for (int i = 0; i < Batchs.size(); ++i){
 
-			scvb_infer(Batchs[i]);
+			scvb_infer(Batchs[i],iter,i);
 		}
 		normalize();
 		double perplexity = Compute_Perplexity();
