@@ -9,9 +9,9 @@
 #include<algorithm>
 #include<string.h>
 #include<memory.h>
-#define M 1500 
+#define M 299752
 #define K 40
-#define V 12419
+#define V 101637
 #define MaxRand 32761
 #define MaxLine 200000
 using namespace std;
@@ -19,7 +19,7 @@ using namespace std;
 
 
 class Doc{
-public :
+public:
 	int index;
 	int TokenNum;
 	vector<int> words;
@@ -34,7 +34,7 @@ public:
 };
 double alpha = 0.1, eta = 0.01;
 double phi[K][V], theta[M][K];
-double Nphi[K][V],Ntheta[M][K];
+double Nphi[K][V], Ntheta[M][K];
 double nz[K];
 int Doc_Count[M];
 vector<int> Document[M];
@@ -45,9 +45,9 @@ double Gamma[V][K];
 double nPhiHat[K][V];
 double Kappa = 0.9;
 
-int iteration = 2000;
-double S1 = 10,S2 = 50;
-double TAO = 1000,TAO2= 105;
+int iteration = 200;
+double S1 = 10, S2 = 50;
+double TAO = 1000, TAO2 = 105;
 
 void GetCount(){
 
@@ -68,15 +68,15 @@ void GetCount(){
 			if (j - 1 >= 0 && Document[i][j] == Document[i][j - 1])
 			{
 				Doc_c[i][index]++;
-			
+
 			}
-			else if (j-1 < 0 || (j-1>=0 && Document[i][j] != Document[i][j-1]))
+			else if (j - 1 < 0 || (j - 1 >= 0 && Document[i][j] != Document[i][j - 1]))
 			{
 				index++;
 				Doc_c[i][index]++;
 			}
 		}
-		Doc_c[i].resize(index+1);
+		Doc_c[i].resize(index + 1);
 	}
 
 	for (int i = 0; i < M; ++i)
@@ -85,7 +85,7 @@ void GetCount(){
 }
 
 void GetDocment(string path){
-	ifstream in(path.c_str()); 
+	ifstream in(path.c_str());
 	int item;
 	char line[MaxLine];
 	int docidx = 0;
@@ -108,26 +108,25 @@ void GetDocment(string path){
 		}
 		Document[docidx].resize(vec.size());
 		int idx = 0;
-		for (int d = 0 ; d< vec.size();++d){
+		for (int d = 0; d< vec.size(); ++d){
 			string it = vec[d];
 			if (!Str2Int[it])
 				Str2Int[it] = ItemInt++;
 			Document[docidx][idx++] = Str2Int[it];
 		}
 		docidx++;
-		cout << docidx << endl;
 	}
 	cout << ItemInt << endl;
 }
 void RemoveDocment(){
 	for (int i = 0; i < M; ++i)
 	{
-		sort(Document[i].begin(), Document[i].end());
-		vector<int>::iterator p = unique(Document[i].begin(), Document[i].end());
-		//cout << "original" << i << Document[i].size()<< endl;
+		for (vector<int>::iterator p = Document[i].begin(); p != Document[i].end(); ++p)
+		{
+			while ((p + 1) != Document[i].end() && *p == *(p + 1))
+				p = Document[i].erase(p);
 
-		Document[i].erase(p, Document[i].end());
-		//cout << "new" <<i<< Document[i].size() << endl;
+		}
 	}
 	cout << "Remove Document end !!" << endl;
 }
@@ -135,21 +134,33 @@ double getrand(){
 	double res = rand();
 	return res / RAND_MAX;
 }
-void Init(){
+void Init(string Path_Theta, string Path_Phi){
+
+	ifstream intheta(Path_Theta.c_str(), ios::in);
+
+	for (int i = 0; i < M; ++i){
+		for (int k = 0; k < K; ++k){
+			intheta >> theta[i][k];
+		}
+	}
+	intheta.close();
+
+	ifstream inphi(Path_Phi.c_str(), ios::in);
+	for (int k = 0; k < K; ++k){
+
+		for (int v = 0; v < V; ++v){
+			inphi >> phi[k][v];
+		}
+	}
+
+	inphi.close();
+
 
 	for (int i = 0; i < M; ++i)
 	{
 		for (int j = 0; j < K; ++j)
 		{
-			theta[i][j] = getrand();
 			nz[j] += theta[i][j];
-		}
-	}
-	for (int j = 0; j < V; ++j)
-	{
-		for (int i = 0; i < K; ++i)
-		{
-			phi[i][j] = getrand();
 		}
 	}
 
@@ -162,7 +173,7 @@ void Init(){
 MiniBatch GetMiniBatch(int start, int end){
 	MiniBatch result;
 	result.TokenNum = 0;
-	
+
 	for (int i = start; i < end; ++i){
 		Doc tep;
 		tep.TokenNum = 0;
@@ -171,7 +182,7 @@ MiniBatch GetMiniBatch(int start, int end){
 
 		for (int j = 0; j < Document[i].size(); ++j){
 			tep.words.push_back(Document[i][j]);
-			
+
 		}
 		result.doc.push_back(tep);
 		result.TokenNum += tep.TokenNum;
@@ -195,15 +206,15 @@ void PrintTheta(string path){
 }
 void  normalize(){
 
-	for (int i = 0;i<M;++i){
-		for (int k = 0;k<K;++k){
+	for (int i = 0; i<M; ++i){
+		for (int k = 0; k<K; ++k){
 			Ntheta[i][k] = theta[i][k] + alpha;
 		}
 	}
-	for (int k = 0 ;k<K;++k){
-		for (int w = 0;w<V;++w){
+	for (int k = 0; k<K; ++k){
+		for (int w = 0; w<V; ++w){
 			Nphi[k][w] = phi[k][w] + eta;
- 		}
+		}
 	}
 
 
@@ -217,7 +228,7 @@ void  normalize(){
 			Nphi[k][v] /= phisum;
 	}
 
-	
+
 
 	for (int i = 0; i < M; ++i)
 	{
@@ -260,41 +271,41 @@ double  Compute_Perplexity(){
 	return exp(result);
 }
 
-void scvb_infer(MiniBatch batch,int iter,int curindex){
+void scvb_infer(MiniBatch batch, int iter, int curindex){
 
 	memset(nPhiHat, 0, sizeof(nPhiHat));
 	memset(nzHat, 0, sizeof(nzHat));
 	memset(Gamma, 0, sizeof(Gamma));
-	memset(nz,0,sizeof(nz));
+	memset(nz, 0, sizeof(nz));
 	int doc_iter = 0;
-	int burn_Total = 15;
-	double rhoTheta ;
+	int burn_Total = 5;
+	double rhoTheta;
 
 	double rhoPhi;
 
 
-	for (int k = 0;k<K;++k){
-		for (int w= 0;w<V;++w){
+	for (int k = 0; k<K; ++k){
+		for (int w = 0; w<V; ++w){
 			nz[k] += phi[k][w];
 		}
 	}
 	double C = GetTotalNum();
-	double minibatch_per_corpus =(1.0*C)/batch.BatchSize;
+	double minibatch_per_corpus = (1.0*C) / batch.BatchSize;
 
-	
+
 
 	for (int i = 0; i < batch.BatchSize; ++i)
 	{
 		int index = batch.doc[i].index;
-		doc_iter = curindex*batch.BatchSize + iter*M +i+1 ;
+		doc_iter = curindex*batch.BatchSize + iter*M + i + 1;
 		for (int burn = 0; burn < burn_Total; ++burn)
 		{
 
-			rhoTheta =  S2/ pow((TAO2+burn ), Kappa);
+			rhoTheta = S2 / pow((TAO2 + burn), Kappa);
 
 			double weight_left = 0;
 			double GammaK[K];
-			memset(GammaK,0,sizeof(GammaK));
+			memset(GammaK, 0, sizeof(GammaK));
 			for (int j = 0; j < Document[index].size(); ++j)
 			{
 
@@ -307,18 +318,18 @@ void scvb_infer(MiniBatch batch,int iter,int curindex){
 					Gamma[wi][k] = (eta + phi[k][wi]) * (alpha + theta[index][k]) / (nz[k] + eta * V);
 					GammaSum += Gamma[wi][k];
 				}
-				for (int k = 0;k<K;++k)
+				for (int k = 0; k<K; ++k)
 					Gamma[wi][k] /= GammaSum;
 
-				weight_left += pow((1 - rhoTheta), wc)   * wc /Doc_Count[index];
+				weight_left += pow((1 - rhoTheta), wc)   * wc / Doc_Count[index];
 
-				for (int k =0;k<K;++k)
+				for (int k = 0; k<K; ++k)
 				{
 					GammaK[k] += (1 - pow((1 - rhoTheta), wc)) * wc * Gamma[wi][k];
 				}
-			}		
+			}
 
-			for (int k = 0;k<K;++k)
+			for (int k = 0; k<K; ++k)
 			{
 				theta[index][k] = weight_left * theta[index][k] + GammaK[k];
 
@@ -333,22 +344,22 @@ void scvb_infer(MiniBatch batch,int iter,int curindex){
 			for (int k = 0; k < K; ++k)
 			{
 				Gamma[wi][k] = (eta + phi[k][wi]) * (alpha + theta[index][k]) / (nz[k] + eta * V);
-				GammaSum  += Gamma[wi][k];
+				GammaSum += Gamma[wi][k];
 			}
-			for (int k = 0;k<K;++k)
+			for (int k = 0; k<K; ++k)
 				Gamma[wi][k] /= GammaSum;
 
-			for(int k = 0;k<K;++k)		{
-				double tep = minibatch_per_corpus* Gamma[wi][k] * wc ;
+			for (int k = 0; k<K; ++k)		{
+				double tep = minibatch_per_corpus* Gamma[wi][k] * wc;
 
 				nPhiHat[k][wi] += tep;
-				nzHat[k] += tep ;
+				nzHat[k] += tep;
 			}
 		}
 
 	}
 
-	rhoPhi = S1 / pow(TAO +doc_iter, Kappa);
+	rhoPhi = S1 / pow(TAO + doc_iter, Kappa);
 
 	for (int k = 0; k < K; ++k)
 	{
@@ -361,12 +372,12 @@ void scvb_infer(MiniBatch batch,int iter,int curindex){
 }
 vector<MiniBatch> SetBatchs(){
 	int BatchSize = 20;
-	
+
 	vector<MiniBatch> Batchs;
 	int index = 0;
 	while (index < M){
 		int start = index;
-		int end = min(index + BatchSize,M);
+		int end = min(index + BatchSize, M);
 		MiniBatch curres = GetMiniBatch(start, end);
 		curres.BatchSize = end - start;
 		Batchs.push_back(curres);
@@ -379,22 +390,21 @@ void Train(){
 	vector<MiniBatch> Batchs = SetBatchs();
 
 	for (int iter = 0; iter < iteration; ++iter){
-		cout << "iter  " << iter << endl;
 		for (int i = 0; i < Batchs.size(); ++i){
 
-			scvb_infer(Batchs[i],iter,i);
+			scvb_infer(Batchs[i], iter, i);
 		}
 		normalize();
 		double perplexity = Compute_Perplexity();
 
-		cout << "perplexity  " << perplexity << endl;
+		cout <<iter<< "  " << perplexity << endl;
 	}
 
 	return;
 
 }
 void outputtest(){
-	
+
 
 
 }
@@ -410,21 +420,21 @@ void PrintResult(string path){
 				MaxValue = theta[i][k];
 				Maxindex = k;
 			}
-		
+
 		}
 		out << Maxindex << endl;
-	
+
 	}
 	out.close();
 }
 int main(){
 
-	GetDocment("nips.train.txt");
+	GetDocment("../dataset/nytime.txt");
 	GetCount();
 	cout << "Get count end!!" << endl;
 
 	RemoveDocment();
-	Init();
+	Init("../dataset/theta.txt", "../dataset/phi.txt");
 
 	Train();
 

@@ -9,9 +9,9 @@
 #include<algorithm>
 #include<string.h>
 #include<memory.h>
-#define M 1500 
-#define K 80
-#define V 12387
+#define M 299752 
+#define K 40
+#define V 101637
 #define MaxRand 32761
 #define MaxLine 200000
 using namespace std;
@@ -22,7 +22,7 @@ int nmk[M][K], nkt[K][V], nktS[K];
 vector<int> Z[M];
 
 
-double alpha = 0.1, beta = 0.13;
+double alpha = 0.1, beta = 0.01;
 double phi[K][V], theta[M][K];
 vector<int> Document[M];
 map<string, int> Str2Int;
@@ -33,6 +33,8 @@ double m_mk[M][K], v_mk[M][K], m_kt[K][V], v_kt[K][V];
 double m_k[K], v_k[K];
 int iteration = 500;
 
+
+double Compute_Perplexity();
 
 void count_update(int doc, int j, int word, double scale){
 	for (int k = 0; k < K; ++k){
@@ -103,26 +105,25 @@ void GetDocment(string path){
 		}
 		Document[docidx].resize(vec.size());
 		int idx = 0;
-		for (int d = 0 ; d< vec.size();++d){
+		for (int d = 0; d< vec.size(); ++d){
 			string it = vec[d];
 			if (!Str2Int[it])
 				Str2Int[it] = ItemInt++;
 			Document[docidx][idx++] = Str2Int[it];
 		}
 		docidx++;
-		cout << docidx << endl;
 	}
 	cout << ItemInt << endl;
 }
 void RemoveDocment(){
 	for (int i = 0; i < M; ++i)
 	{
-		sort(Document[i].begin(), Document[i].end());
-		vector<int>::iterator p = unique(Document[i].begin(), Document[i].end());
-		//cout << "original" << i << Document[i].size()<< endl;
+		for (vector<int>::iterator p = Document[i].begin(); p != Document[i].end(); ++p)
+		{
+			while(   (p+1) != Document[i].end()  && *p  == *(p+1) )
+				p = Document[i].erase(p);
 		
-		Document[i].erase(p,Document[i].end());
-		//cout << "new" <<i<< Document[i].size() << endl;
+		}
 	}
 	cout << "Remove Document end !!" << endl;
 }
@@ -130,7 +131,7 @@ double getrand(){
 	double res = rand();
 	return res / RAND_MAX;
 }
-void Init(){
+void Init(string Path_Theta,string Path_Phi){
 
 	for (int i = 0; i < M; ++i)
 		for (int j = 0; j < K; ++j)
@@ -152,31 +153,59 @@ void Init(){
 			Gamma[i][j].resize(K);
 	}
 
+
+	ifstream intheta(Path_Theta.c_str(), ios::in);
+
+	for (int i = 0; i < M; ++i){
+		for (int k= 0; k < K; ++k){
+			intheta >> theta[i][k];
+		}
+	}
+	intheta.close();
+
+	ifstream inphi(Path_Phi.c_str(), ios::in);
+	for (int k = 0; k < K; ++k){
+		
+		for (int v = 0; v < V; ++v){
+			inphi >> phi[k][v];
+		}
+	}
+
+	inphi.close();
+
+
 	for (int i = 0; i < M; ++i)
 	{
 		for (int j = 0; j < Document[i].size(); ++j)
 		{
 			double teptotal = 0;
+			int wi = Document[i][j];
+		
 			for (int k = 0; k < K; ++k)
 			{
-				Gamma[i][j][k] = getrand();
+				Gamma[i][j][k] += theta[i][k] * phi[k][wi];
 				teptotal += Gamma[i][j][k];
 			}
 			
+			for (int k = 0; k < K; ++k){
+				Gamma[i][j][k] /= teptotal;
+			}
+
+
 			//cout << teptotal << endl;
 			/*
 			for (int k = 0; k < K; ++k)
 			{
-				Gamma[i][j][k] = Gamma[i][j][k] / (teptotal);
-				
-				double temp = Doc_c[i][j] * Gamma[i][Document[i][j]][k];
-				theta[i][k] += temp;
-				phi[Document[i][j]][k] += temp;
-				
+			Gamma[i][j][k] = Gamma[i][j][k] / (teptotal);
+
+			double temp = Doc_c[i][j] * Gamma[i][Document[i][j]][k];
+			theta[i][k] += temp;
+			phi[Document[i][j]][k] += temp;
+
 			}*/
 		}
 	}
-	
+
 
 
 	for (int i = 0; i < M; ++i)
@@ -187,41 +216,42 @@ void Init(){
 		}
 	}
 
+
 	cout << "init end" << endl;
 	return;
 
 }
 /*
 double llhw(){
-	double lgamma_alpha = lgamma(alpha);
-	double lgamma_beta = lgamma(beta);
+double lgamma_alpha = lgamma(alpha);
+double lgamma_beta = lgamma(beta);
 
 
 
-	double res = 0;
-	res += K* lgamma(beta*V);
-	for (int k = 0; k < K; ++k)
-		res -= lgamma(beta*V + m_k[k]);
+double res = 0;
+res += K* lgamma(beta*V);
+for (int k = 0; k < K; ++k)
+res -= lgamma(beta*V + m_k[k]);
 
 
 
-	for (int t = 0; t < V; ++t){
-		for (int k = 0; k < K; ++k){
-			if (m_kt[k][t] > 0)
-				res += lgamma(beta + m_kt[k][t]) - lgamma_beta;
-		}
-	}
+for (int t = 0; t < V; ++t){
+for (int k = 0; k < K; ++k){
+if (m_kt[k][t] > 0)
+res += lgamma(beta + m_kt[k][t]) - lgamma_beta;
+}
+}
 
-	for (int m = 0; m < M; ++m)
-	{
-		res += (lgamma(alpha*K) - lgamma(alpha*K + Document[m].size()));
-		for (int k = 0; k < K; ++k){
-			if (m_mk[m][k] > 0)
-				res += lgamma(alpha + m_mk[m][k]) - lgamma_alpha;
-		}
+for (int m = 0; m < M; ++m)
+{
+res += (lgamma(alpha*K) - lgamma(alpha*K + Document[m].size()));
+for (int k = 0; k < K; ++k){
+if (m_mk[m][k] > 0)
+res += lgamma(alpha + m_mk[m][k]) - lgamma_alpha;
+}
 
-	}
-	return res;
+}
+return res;
 }
 */
 
@@ -248,8 +278,8 @@ double cvb_infer(int iter){
 				old_Gamma[k] = Gamma[i][j][k];
 				double newGamma = (alpha + m_mk[i][k]) *
 					((beta + m_kt[k][wi]) / (beta*V + m_k[k]))*
-					
-					exp( -1 * (v_mk[i][k] / (2 * pow(alpha + m_mk[i][k], 2))) -
+
+					exp(-1 * (v_mk[i][k] / (2 * pow(alpha + m_mk[i][k], 2))) -
 					(v_kt[k][wi] / (2 * pow(beta + m_kt[k][wi], 2))) +
 					(v_k[k] / (2 * pow(beta*V + m_k[k], 2))));
 				Gamma[i][j][k] = newGamma;
@@ -316,7 +346,7 @@ void est_phi(){
 		for (int v = 0; v < V; ++v)
 		{
 
-				phi[i][v] = (beta + m_kt[i][v]) / (beta*V + m_vsum[i]);
+			phi[i][v] = (beta + m_kt[i][v]) / (beta*V + m_vsum[i]);
 
 		}
 	}
@@ -337,13 +367,14 @@ int  GetTotalNum(){
 	int res = 0;
 	for (int i = 0; i < M; ++i)
 	{
-		for (int j = 0; j < Doc_c[i].size();++j)
-		res += Doc_c[i][j];
+		for (int j = 0; j < Doc_c[i].size(); ++j)
+			res += Doc_c[i][j];
 	}
 	return res;
 
 }
 double  Compute_Perplexity(){
+
 	double  result = 0;
 	for (int m = 0; m < M; ++m)
 	{
@@ -353,18 +384,18 @@ double  Compute_Perplexity(){
 			double p[K];
 			for (int i = 0; i < K; ++i)
 				p[i] = 0;
-			
+
 			for (int k = 0; k < K; ++k){
 
 				p[k] += theta[m][k] * phi[k][wi];
 			}
 			double tepsum = 0;
-			
+
 			for (int k = 0; k < K; ++k)
 				tepsum += p[k];
-			result += Doc_c[m][j]*log(tepsum);
-		//	result += log(tepsum);
+			result += Doc_c[m][j] * log(tepsum);
 		}
+
 
 	}
 	int TotalNum = GetTotalNum();
@@ -374,18 +405,17 @@ double  Compute_Perplexity(){
 }
 
 void Train(){
-
+	double perplexity = Compute_Perplexity();
+	cout << perplexity << endl;
 	for (int iter = 0; iter < iteration; ++iter){
-		cout << "iter  " << iter << endl;
-	//	double infer = llhw();
+		//	double infer = llhw();
 		double tepres = cvb_infer(iter);
 
-		cout << "max_change" << tepres << endl;
-	//	cout << "llhw" << infer << endl;
+		//	cout << "llhw" << infer << endl;
 		est_phi();
 		est_theta();
 		double perplexity = Compute_Perplexity();
-		cout << "perplexity  " << perplexity << endl;
+		cout <<iter << "  " << perplexity << endl;
 	}
 	return;
 
@@ -412,11 +442,11 @@ void PrintResult(string path){
 int main(){
 	int t = 12;
 	srand(t);
-	GetDocment("nips.train.txt");
+	GetDocment("../dataset/nytimes.txt");
 	GetCount();
 	cout << "Get count end!!" << endl;
 	RemoveDocment();
-	Init();
+	Init("../dataset/theta.txt","../dataset/phi.txt");
 
 	Train();
 
